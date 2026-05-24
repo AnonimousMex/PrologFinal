@@ -4,31 +4,55 @@
         <meta charset="UTF-8">
         <title>Back To The Sample</title>
         <style>
-        body { background: #121212; color: #fff; display: flex; flex-direction: column; align-items: center; padding: 50px; }
-        .search-box { margin-bottom: 20px; }
-        .tree-container { width: 100%; max-width: 500px; }
-        .vinyl-node { display: flex; align-items: center; gap: 15px; margin-top: 10px; background: #222; padding: 10px; border-radius: 10px; }
-        .spin { animation: spin 4s linear infinite; }
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #fff; display: flex; flex-direction: column; align-items: center; padding: 40px; }
+        h1 { color: #1DB954; font-size: 2.5rem; margin-bottom: 5px; }
+        .search-box { display: flex; gap: 10px; margin-bottom: 30px; }
+        input { padding: 12px; border-radius: 20px; border: none; width: 300px; padding-left: 15px; }
+        button { padding: 10px 20px; border-radius: 20px; border: none; background: #1DB954; color: white; cursor: pointer; font-weight: bold; }
+        .tree-container { background: #1e1e1e; padding: 25px; border-radius: 15px; width: 100%; max-width: 500px; }
+        
+        /* Estilo Vinilo */
+        .vinyl-node { display: flex; align-items: center; gap: 15px; margin-top: 15px; background: #2a2a2a; padding: 10px; border-radius: 10px; }
+        .spin { animation: spin 4s linear infinite; width: 60px; height: 60px; border-radius: 50%; overflow: hidden; border: 4px solid #000; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+        .vinyl-cover { width: 100%; height: 100%; object-fit: cover; }
     </style>
     </head>
     <body>
         <h1>🎵 Back To The Sample</h1>
+        <p>Descubre el árbol genealógico de tus canciones favoritas</p>
         <div class="search-box">
-            <input type="text" id="songInput"><button
-                onclick="buscar()">Rastrear</button>
+            <input type="text" id="songInput" placeholder="Stan">
+            <button onclick="buscar()">Rastrear Samples</button>
         </div>
         <div id="results" class="tree-container"></div>
+
         <script>
         async function buscar() {
             const song = document.getElementById('songInput').value;
-            const res = await fetch(`https://prologfinal-production.up.railway.app/api/arbol/${encodeURIComponent(song)}`);
-            const data = await res.json();
-            let html = `<h3>${data.spotify.nombre_oficial}</h3>`;
-            data.ancestry_tree.forEach(a => {
-                html += `<div class="vinyl-node"><div class="spin"><img src="${a.portada}" style="width:50px;border-radius:50%"></div><div><h4>${a.titulo}</h4><p>${a.artista}</p></div></div>`;
-            });
-            document.getElementById('results').innerHTML = html;
+            const resDiv = document.getElementById('results');
+            resDiv.innerHTML = 'Procesando...';
+            try {
+                const res = await fetch(`https://prologfinal-production.up.railway.app/api/arbol/${encodeURIComponent(song)}`);
+                const data = await res.json();
+                
+                let html = `<div style="display:flex; gap:15px; align-items:center; border-bottom:1px solid #444; padding-bottom:15px;">
+                    <img src="${data.spotify.portada}" style="width:80px; border-radius:10px;">
+                    <div><h3 style="margin:0;">${data.spotify.nombre_oficial}</h3><p style="margin:5px 0; color:#1DB954;">${data.spotify.artista}</p></div>
+                </div>`;
+
+                if (data.ancestry_tree.length === 0) html += `<p>No se encontraron samples.</p>`;
+                
+                // AQUÍ ESTÁ EL CAMBIO: Recorre TODO el árbol
+                data.ancestry_tree.forEach(a => {
+                    html += `
+                    <div class="vinyl-node">
+                        <div class="spin"><img src="${a.portada}" class="vinyl-cover"></div>
+                        <div><h4 style="margin:0;">${a.titulo}</h4><p style="margin:0; font-size:14px; color:#aaa;">${a.artista}</p></div>
+                    </div>`;
+                });
+                resDiv.innerHTML = html;
+            } catch(e) { resDiv.innerHTML = "Error al conectar."; }
         }
     </script>
     </body>
