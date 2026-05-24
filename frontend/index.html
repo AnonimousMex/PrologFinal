@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title>Back To The Sample</title>
+        <style>
+        body { background: #121212; color: #fff; display: flex; flex-direction: column; align-items: center; padding: 50px; }
+        .search-box { margin-bottom: 20px; }
+        .tree-container { width: 100%; max-width: 500px; }
+        .vinyl-node { display: flex; align-items: center; gap: 15px; margin-top: 10px; background: #222; padding: 10px; border-radius: 10px; }
+        .spin { animation: spin 4s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+    </head>
+    <body>
+        <h1>🎵 Back To The Sample</h1>
+        <div class="search-box">
+            <input type="text" id="songInput"><button
+                onclick="buscar()">Rastrear</button>
+        </div>
+        <div id="results" class="tree-container"></div>
+        <script>
+        async function buscar() {
+            const song = document.getElementById('songInput').value;
+            const res = await fetch(`https://prologfinal-production.up.railway.app/api/arbol/${encodeURIComponent(song)}`);
+            const data = await res.json();
+            let html = `<h3>${data.spotify.nombre_oficial}</h3>`;
+            data.ancestry_tree.forEach(a => {
+                html += `<div class="vinyl-node"><div class="spin"><img src="${a.portada}" style="width:50px;border-radius:50%"></div><div><h4>${a.titulo}</h4><p>${a.artista}</p></div></div>`;
+            });
+            document.getElementById('results').innerHTML = html;
+        }
+    </script>
+    </body>
+</html>
