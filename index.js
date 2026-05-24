@@ -1,3 +1,4 @@
+const { WebSocket } = require("ws");
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -10,12 +11,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// INICIALIZACIÓN CORREGIDA CON WEBSOCKET
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_KEY,
+  {
+    realtime: {
+      transport: WebSocket,
+    },
+  },
 );
 
-// URLs divididas para que no se corrompan los enlaces
+// URLs divididas para evitar censura
 const URL_TOKEN = "https://" + "accounts.spotify.com" + "/api/token";
 const URL_SEARCH = "https://" + "api.spotify.com" + "/v1/search";
 
@@ -41,7 +48,6 @@ async function getSpotifyToken() {
 }
 
 app.get("/api/arbol/:cancion", async (req, res) => {
-  // Esto corrige automáticamente si pones stan, STAN o sTaN a "Stan"
   const cancionABuscar = req.params.cancion
     .toLowerCase()
     .replace(/\b\w/g, (c) => c.toUpperCase());
